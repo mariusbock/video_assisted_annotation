@@ -15,7 +15,7 @@ cd video_assisted_annotation
 Create [Anaconda](https://www.anaconda.com/products/distribution) environment:
 
 ```
-conda create -n video_annotation python
+conda create -n video_annotation python==3.10.11
 conda activate video_annotation
 ```
 
