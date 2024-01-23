@@ -1,3 +1,7 @@
+# Project-related
+plots
+overall_results_*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
