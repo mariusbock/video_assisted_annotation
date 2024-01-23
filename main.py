@@ -5,47 +5,38 @@ import matplotlib.pyplot as plt
 import os
 import json
 import seaborn as sns
-from matplotlib.legend_handler import HandlerPatch
-import matplotlib.patches as mpatches
 from matplotlib.colors import LinearSegmentedColormap
 
 pd.options.mode.chained_assignment = None 
 np.seterr(divide='ignore', invalid='ignore')
 
 
-class HandlerEllipse(HandlerPatch):
-    def create_artists(self, legend, orig_handle,
-                       xdescent, ydescent, width, height, fontsize, trans):
-        center = 0.5 * width - 0.5 * xdescent, 0.5 * height - 0.5 * ydescent
-        p = mpatches.Ellipse(xy=center, width=height + xdescent,
-                             height=height + ydescent)
-        self.update_prop(p, orig_handle, legend)
-        p.set_transform(trans)
-        return [p]
-
-
 def compare_timelines(gt, timeline_1, name, cmap1, n_classes):
-    import numpy as np
-    import matplotlib.patches as mpatches
+    """Creates color-coded visualization of participant's annotated timeline and ground truth annotations. Saves visualization as .png file.
+    
+    Parameters
+    ----------
+    gt : list
+        List of ground truth labels (per-record basis)
+    timeline_1 : list
+        List of participant's annotation labels (per-record basis)
+    name : str
+        File name of created png file
+    cmap1 : list
+        Hex values of colors to be used for each label
+    n_classes : int
+        Number of classes in dataset
+    """
     import matplotlib.pyplot as plt
     from matplotlib.ticker import StrMethodFormatter
     
     # plot 1:
-    fig, (ax1) = plt.subplots(1, 1, sharex=True, figsize=(6, 3), layout="constrained")
-    
-    #gt_ax.set_yticks([])
-    #gt_ax.pcolor([gt], cmap=cmap1, vmin=0, vmax=n_classes)
-    
+    fig, (gt_ax, ax1) = plt.subplots(2, 1, sharex=True, figsize=(6, 3), layout="constrained")
+    gt_ax.set_yticks([])
+    gt_ax.pcolor([gt], cmap=cmap1, vmin=0, vmax=n_classes)    
     ax1.set_yticks([])
     ax1.pcolor([timeline_1], cmap=cmap1, vmin=0, vmax=n_classes)
     
-    """
-    c = [mpatches.Circle((0.5, 0.5), radius=0.25, facecolor=colors1[i], edgecolor="none") for i in
-         range(n_classes)]
-    fig.legend(c, unordered_unique_labels, bbox_to_anchor=(1, 0.5), loc='right', ncol=n_classes,
-               fancybox=True, shadow=True,
-               handler_map={mpatches.Circle: HandlerEllipse()}).get_frame()"""
-
     plt.gca().xaxis.set_major_formatter(StrMethodFormatter('{x:,.0f}'))  # No decimal places
     plt.xticks([])
     plt.savefig(os.path.join('plots', name + '.png'))
@@ -53,10 +44,48 @@ def compare_timelines(gt, timeline_1, name, cmap1, n_classes):
 
 
 def Filter(string, substr):
+    """Filters list of strings for whether each string contains a substring.
+    
+    Parameters
+    ----------
+    string : list
+        List of strings to be filtered
+    substr : str
+        Substring which should be contained in strings
+    Returns
+    -------
+    list
+        List of strings which contained substring
+    """
     return [str for str in string if any(sub in str for sub in substr)]
 
 
 def compute_scores(data, name, gt_column, subjs, experts, novices, mad, elan, label_dict=None, color_map=None):
+    """Computes the F1-score, Cohens Kappa and NULL-class accuracy of each session of each participant. Writes results to two JSON-formatted text files.
+    
+    Parameters
+    ----------
+    data : list
+        DataFrame containing the sensor data, ground truth and participants' annotations
+    name : str
+        Dataset name to be used
+    gt_column : str
+        Column name which contains ground truth labels
+    subjs : str
+        List of all subjects ids
+    experts : list
+        List of session ids which were commenced by experts
+    novices : list
+        List of session ids which were commenced by novices
+    mad : list
+        List of session ids which were commenced using the MAD-GUI
+    elan : list
+        List of session ids which were commenced using the ELAN player
+    label_dict : dict, optional
+        Label dictionary of label string and corresponding id
+    color_map : list, optional
+        Color map for labels which should be applied during visualization        
+    """
     from sklearn.metrics import cohen_kappa_score, f1_score, confusion_matrix, ConfusionMatrixDisplay
     result = dict()
     all_gt = np.array([])
@@ -152,46 +181,48 @@ def compute_scores(data, name, gt_column, subjs, experts, novices, mad, elan, la
         file.write(json.dumps(result, indent=3))
 
 
-# MAIN:
-wetlab_0_10, wear_0_10 = dp.get_gui_label_timestamps('_0_10')
-wetlab_10_20, wear_10_20 = dp.get_gui_label_timestamps('_10_20')
+if __name__ == '__main__':
+    raw_data_folder = 'sensor_data'
+    annotations = 'annotations'
+    nov = ['sbj_0', 'sbj_1', 'sbj_2', 'sbj_3', 'sbj_4', 'sbj_5', 'sbj_6', 'sbj_7', 'sbj_8', 'sbj_9']
+    ex = ['sbj_10', 'sbj_11', 'sbj_12', 'sbj_13', 'sbj_14']
+    wetlab_0_10, wear_0_10 = dp.get_gui_label_timestamps('_0_10', raw_data_folder, annotations)
+    wetlab_10_20, wear_10_20 = dp.get_gui_label_timestamps('_10_20', raw_data_folder, annotations)
 
-wetlab = pd.concat((wetlab_0_10, wetlab_10_20), axis=1)
-wear = pd.concat((wear_0_10, wear_10_20), axis=1)
+    wetlab = pd.concat((wetlab_0_10, wetlab_10_20), axis=1)
+    wear = pd.concat((wear_0_10, wear_10_20), axis=1)
 
-label_dict_wetlab = {
-    'null_class': 0,
-    'pouring': 1,
-    'transfer': 2,
-    'pipetting': 3,
-    'stirring': 4,
-    'cutting': 5,
-    'pestling': 6,
-    'mixing': 7,
-}
-label_dict_wear = {
-    'null_class': 0,
-    'jogging (sidesteps)': 1,
-    'bench-dips': 2,
-    'stretching (shoulders)': 3,
-    'jogging (butt-kicks)': 4,
-    'burpees': 5,
-    'lunges': 6,
-}
+    label_dict_wetlab = {
+        'null_class': 0,
+        'pouring': 1,
+        'transfer': 2,
+        'pipetting': 3,
+        'stirring': 4,
+        'cutting': 5,
+        'pestling': 6,
+        'mixing': 7,
+    }
+    label_dict_wear = {
+        'null_class': 0,
+        'jogging (sidesteps)': 1,
+        'bench-dips': 2,
+        'stretching (shoulders)': 3,
+        'jogging (butt-kicks)': 4,
+        'burpees': 5,
+        'lunges': 6,
+    }
 
-wear_subjs = [col for col in wear.columns if (('mad' in col) or ('elan' in col))]
-wetlab_subjs = [col for col in wetlab.columns if (('mad' in col) or ('elan' in col))]
-ex = ['sbj_10', 'sbj_11', 'sbj_12', 'sbj_13', 'sbj_14']
-nov = ['sbj_0', 'sbj_1', 'sbj_2', 'sbj_3', 'sbj_4', 'sbj_5', 'sbj_6', 'sbj_7', 'sbj_8', 'sbj_9']
-expert_subjs = Filter(wear_subjs + wetlab_subjs, ex)
-novice_subjs = Filter(wear_subjs + wetlab_subjs, nov)
-mad_subjs = Filter(wear_subjs + wetlab_subjs, ['mad'])
-elan_subjs = Filter(wear_subjs + wetlab_subjs, ['elan'])
-colors1 = sns.color_palette(palette="colorblind", n_colors=len(label_dict_wear) + len(label_dict_wetlab)).as_hex()
-colors1[0] = '#F8F8F8'
-colors1[len(label_dict_wear)] = '#F8F8F8'
-cmap_wear = LinearSegmentedColormap.from_list(name="Wear", colors=colors1[:len(label_dict_wear)], N=len(label_dict_wear))
-cmap_wetlab = LinearSegmentedColormap.from_list(name="Wetlab", colors=colors1[len(label_dict_wear):], N=len(label_dict_wetlab))
+    wear_subjs = [col for col in wear.columns if (('mad' in col) or ('elan' in col))]
+    wetlab_subjs = [col for col in wetlab.columns if (('mad' in col) or ('elan' in col))]
+    expert_subjs = Filter(wear_subjs + wetlab_subjs, ex)
+    novice_subjs = Filter(wear_subjs + wetlab_subjs, nov)
+    mad_subjs = Filter(wear_subjs + wetlab_subjs, ['mad'])
+    elan_subjs = Filter(wear_subjs + wetlab_subjs, ['elan'])
+    colors1 = sns.color_palette(palette="colorblind", n_colors=len(label_dict_wear) + len(label_dict_wetlab)).as_hex()
+    colors1[0] = '#F8F8F8'
+    colors1[len(label_dict_wear)] = '#F8F8F8'
+    cmap_wear = LinearSegmentedColormap.from_list(name="Wear", colors=colors1[:len(label_dict_wear)], N=len(label_dict_wear))
+    cmap_wetlab = LinearSegmentedColormap.from_list(name="Wetlab", colors=colors1[len(label_dict_wear):], N=len(label_dict_wetlab))
 
-compute_scores(wear, "wear", "groundtruth", wear_subjs, experts=expert_subjs, novices=novice_subjs, mad=mad_subjs, elan=elan_subjs ,label_dict=label_dict_wear, color_map=cmap_wear)
-compute_scores(wetlab, "wetlab", "groundtruth", wetlab_subjs, experts=expert_subjs, novices=novice_subjs, mad=mad_subjs, elan=elan_subjs ,label_dict=label_dict_wetlab, color_map=cmap_wetlab)
+    compute_scores(wear, "wear", "groundtruth", wear_subjs, experts=expert_subjs, novices=novice_subjs, mad=mad_subjs, elan=elan_subjs ,label_dict=label_dict_wear, color_map=cmap_wear)
+    compute_scores(wetlab, "wetlab", "groundtruth", wetlab_subjs, experts=expert_subjs, novices=novice_subjs, mad=mad_subjs, elan=elan_subjs ,label_dict=label_dict_wetlab, color_map=cmap_wetlab)

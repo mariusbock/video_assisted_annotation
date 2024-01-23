@@ -1,9 +1,26 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
+import glob
+import os
 
 
 def extract_elan_labels(data, subject, path):
+    """Converts exported ELAN player annotations and appends them as column to a sensor DataFrame.
+
+    Parameters
+    ----------
+    data : Pandas DataFrame
+        DataFrame containing sensor data, ground truth data and appended participants' annotations 
+    subject : str
+        Subject identifier of the participant annotations belong to
+    path: str
+        Path to the annotations
+    Returns
+    -------
+    Pandas DataFrame
+        Initial data DataFrame with the participant's annotations appended as additional column
+    """
     timestamps = pd.to_timedelta(data['timestamps'])
     data = data.reset_index(drop=True)
     labels = pd.read_csv(path, delimiter='\t', index_col=0, header=None, lineterminator='\n')
@@ -33,23 +50,35 @@ def extract_elan_labels(data, subject, path):
 
     return data
 
-def get_gui_label_timestamps(file_type):
-    import glob
+def get_gui_label_timestamps(file_type, raw_data_folder, annotations):
+    """Appends each participants annotations to sensor dataframe for both ELAN player and MAD-GUI annotations.
+    
+    Parameters
+    ----------
+    file_type : str
+        Annotation file type, i.e. which part of dataset was annotated
+    raw_data_folder : str
+        Folder location of sensor data
+    annotations: str
+        Path to the annotations
+    Returns
+    -------
+    Pandas DataFrame
+        Wetlab and WEAR sensor dataframes with appended annotations of each participant as separate columns
+    """
 
-    raw_data_folder = 'raw/'
-    annotations = 'annotations/'
     gt = "groundtruth" + file_type
-    annotations_wear_mad = glob.glob(annotations + "wear/*" + file_type + ".csv")
+    annotations_wear_mad = glob.glob(os.path.join(annotations, "wear/*" + file_type + ".csv"))
     annotations_wear_mad.sort()
-    annotations_wear_elan = glob.glob(annotations + "wear/*" + file_type + ".txt")
+    annotations_wear_elan = glob.glob(os.path.join(annotations, "wear/*" + file_type + ".txt"))
     annotations_wear_elan.sort()
-    annotations_wetlab_mad = glob.glob(annotations + "wetlab/*" + file_type + ".csv")
+    annotations_wetlab_mad = glob.glob(os.path.join(annotations, "wetlab/*" + file_type + ".csv"))
     annotations_wetlab_mad.sort()
-    annotations_wetlab_elan = glob.glob(annotations + "wetlab/*" + file_type + ".txt")
+    annotations_wetlab_elan = glob.glob(os.path.join(annotations, "wetlab/*" + file_type + ".txt"))
     annotations_wetlab_elan.sort()
-    wetlab_data = pd.read_csv(raw_data_folder + "wetlab" + file_type + ".csv", names=['timestamps', 'sbj', 'acc_x', 'acc_y', 'acc_z', gt, 'groundtruth1'], index_col=0).drop('groundtruth1', axis=1)
+    wetlab_data = pd.read_csv(os.path.join(raw_data_folder, "wetlab" + file_type + ".csv"), names=['timestamps', 'sbj', 'acc_x', 'acc_y', 'acc_z', gt, 'groundtruth1'], index_col=0).drop('groundtruth1', axis=1)
     wetlab_data.fillna('null_class', inplace=True)
-    wear_data = pd.read_csv(raw_data_folder + "wear" + file_type + ".csv", index_col=0, names=['timestamps', 'right_arm_acc_x','right_arm_acc_y','right_arm_acc_z', 'labels']).rename({'labels': gt}, axis=1)
+    wear_data = pd.read_csv(os.path.join(raw_data_folder, "wear" + file_type + ".csv"), index_col=0, names=['timestamps', 'right_arm_acc_x','right_arm_acc_y','right_arm_acc_z', 'labels']).rename({'labels': gt}, axis=1)
     wear_data.fillna('null_class', inplace=True)
 
     # wetlab
