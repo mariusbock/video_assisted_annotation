@@ -40,7 +40,7 @@ The individual videos used during each annotation session can be downloaded from
 - **data\_prep**: Python script used for converting the extracted annotations to CSV format and combine them with the raw ground truth data of each dataset.
 - **main.py**: Main python script to recreate all plots and reproduce evaluation results mentioned in the paper.
 - **study\_results.xlsx**: Excel sheet containing all per-participant NASA and evaluation metrics results.
-- **nasa\_feedback.pdf**: Post-experiment survey sheet collecting NASA-TLX results and feedback regarding the annotation tools.
+- **nasa\_feedback\_template.pdf**: Post-experiment questionnaire sheet collecting NASA-TLX results and feedback regarding the annotation tools.
 
 ## Cite as
 Coming soon
