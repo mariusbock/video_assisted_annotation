@@ -6,7 +6,9 @@ import os
 import json
 import seaborn as sns
 from matplotlib.colors import LinearSegmentedColormap
+import platform
 
+operating_system = platform.system()
 pd.options.mode.chained_assignment = None 
 np.seterr(divide='ignore', invalid='ignore')
 
@@ -39,6 +41,7 @@ def compare_timelines(gt, timeline_1, name, cmap1, n_classes):
     
     plt.gca().xaxis.set_major_formatter(StrMethodFormatter('{x:,.0f}'))  # No decimal places
     plt.xticks([])
+
     plt.savefig(os.path.join('plots', name + '.png'))
     plt.close()
 
@@ -106,7 +109,10 @@ def compute_scores(data, name, gt_column, subjs, experts, novices, mad, elan, la
         file_type = '_'.join(subj.split('_')[-2:])
         gt = np.squeeze(data[[gt_column + '_' + file_type]].replace(label_dict).fillna(0).values)
         cc = np.squeeze(data[[subj]].replace(label_dict).fillna(0).values)
-        compare_timelines(gt, cc, str(int(i)) + '_' + name + '_' + subj, color_map, len(label_dict))
+        if operating_system == "Windows":
+            subject_string = subj.split("\\")[-1]
+        else: subject_string = subj
+        compare_timelines(gt, cc, str(int(i)) + '_' + name + '_' + subject_string, color_map, len(label_dict))
         conf_mat_sbj = confusion_matrix(gt, cc, normalize='true', labels=range(len(label_dict)))
         result[subj + '_f1_score'] = f1_score(gt, cc, average='macro', labels=np.unique(np.concatenate((gt, cc))))
         result[subj + '_cohens'] = cohen_kappa_score(gt, cc, labels=np.unique(np.concatenate((gt, cc))))
