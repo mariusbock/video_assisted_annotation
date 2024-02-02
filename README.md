@@ -5,7 +5,7 @@ Despite the simplicity of labels and extensive study protocols provided during d
 
 ## Artifact Guide
 
-Apart from the main paper we an Artifact Guide (`artifact_guide.pdf`), which was part of the Artifact Evaluation process of the [PERCOM 2024](https://www.percom.org/) conference. The guide is to be read as supplementary information to our main paper and provides details on deployment, software/ hardware requirements, expected results and further study details to enhance reproducibility of our performed study (e.g. by other researchers).
+Apart from the main paper we provide an Artifact Guide (`artifact_guide.pdf`), which was part of the Artifact Evaluation process of the [PERCOM 2024](https://www.percom.org/) conference. The guide is to be read as supplementary information to our main paper and provides details on deployment, software/ hardware requirements, expected results and further study details to enhance reproducibility of our performed study (e.g. by other researchers).
 
 ## Installation
 
