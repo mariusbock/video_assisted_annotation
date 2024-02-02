@@ -42,5 +42,12 @@ The individual videos used during each annotation session can be downloaded from
 - **study\_results.xlsx**: Excel sheet containing all per-participant NASA and evaluation metrics results. The sheet is divided into 3 subsheets: "MAD", "ELAN", "Plots". The "MAD" and "ELAN" subsheet contains information on information collected during annotation sessions when participants used the MaD-GUI/ ELAN-Player for annotation. That is the skill level of the participant, pros and cons of the tool (as defined by the participant), time the participant took to annotate the 10-minute segment of the WEAR and Wetlab dataset and NASA-TLX scores. The "MAD" and "ELAN" subsheets further calculate averages and standard deviation across novices, experts and all participants. The "Plots" subsheet provides an overview of all NASA-TLX results, the plot corresponding to Figure 3 of the main paper and two tables containing all calculated per-participant evaluation metrics (F1-score, Cohens-Kappa and NULL-class accuracy) per dataset.
 - **nasa\_feedback\_template.pdf**: Post-experiment questionnaire sheet collecting NASA-TLX results and feedback regarding the annotation tools.
 
+## Expected Results
+Upon running the `main.py` file of this repository three types of files will be created:
+- Per-participant colored-visualizations of each participant's provided annotations compared to the ground truth annotations. The color-coded visualization plots were cropped and combined during the creation of Figure 2 of the main paper. The plots are stored in a sepearte `plots` folder. Each file follows the format: \{session identifier\}\_\{dataset\}\_sbj\_\{annotation tool\}\_\{subject minute\}\_\{start minute\}\_\{end minute\}.png
+- Confusion matrices calculated comparing annotations to the ground truth data for different subsets of participants (e.g. experts). The plots are stored in a sepearte `plots` folder.
+- Two JSON-formatted text files (one per annotation tool) containing individual F1-score, Cohens-$\kappa$ and NULL-class accuracy of each participant's session.
+In order to check the validity of obtained results, we provide an excel sheet, \textit{study\_results.xslx}, which contains all per-participant NASA as well as evaluation metrics results one obtains when running our repository. 
+
 ## Cite as
 Coming soon
