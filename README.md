@@ -57,4 +57,12 @@ Upon running the `main.py` file of this repository three types of files will be 
 In order to check the validity of obtained results, we provide an excel sheet, `study_results.xslx`, which contains all per-participant NASA as well as evaluation metrics results one obtains when running our repository. 
 
 ## Cite as
-Coming soon
+```
+@inproceedings{hoelzemannbock2024videoannotation,
+  title = {Evaluation of Video-Assisted Annotation of Human IMU Data Across Expertise, Datasets, and Tools},
+  author = {A. Hoelzemann and M. Bock and K. Laerhoven},
+  booktitle = {2024 IEEE International Conference on Pervasive Computing and Communications Workshops and other Affiliated Events (PerCom Workshops)},
+  year = {2024},
+  url = {https://doi.org/10.1109/PerComWorkshops59983.2024.10503292},
+  publisher = {IEEE Computer Society},
+}
